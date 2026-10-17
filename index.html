@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="DevTrack — acompanhe seus estudos, tarefas e projetos de programação." />
+  <title>DevTrack — Developer Progress Tracker</title>
+  <!-- Aplica o tema salvo antes da renderização (evita "flash" de tema errado) -->
+  <script>
+    try {
+      var p = JSON.parse(localStorage.getItem("devtrack:prefs") || "{}");
+      if (p.theme === "light" || p.theme === "dark") {
+        document.documentElement.setAttribute("data-theme", p.theme);
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <a class="skip-link" href="#main">Pular para o conteúdo</a>
+
+  <!-- Sprite de ícones (reutilizados com <use>) -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+    <symbol id="i-dashboard" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+    <symbol id="i-tasks" viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></symbol>
+  </svg>
+
+  <div class="app" id="app">
+    <!-- ===== Menu lateral ===== -->
+    <aside class="sidebar" id="sidebar" aria-label="Navegação principal">
+      <div class="brand">
+        <span class="brand__logo" aria-hidden="true">
+          <svg class="icon"><use href="#i-code"/></svg>
+        </span>
+        <span class="brand__name">Dev<strong>Track</strong></span>
+      </div>
+
+      <nav class="nav">
+        <ul>
+          <li><a class="nav__link" href="#dashboard" data-view="dashboard"><svg class="icon" aria-hidden="true"><use href="#i-dashboard"/></svg><span>Dashboard</span></a></li>
+          <li><a class="nav__link" href="#tasks" data-view="tasks"><svg class="icon" aria-hidden="true"><use href="#i-tasks"/></svg><span>Tarefas</span></a></li>
+          <li><a class="nav__link" href="#studies" data-view="studies"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg><span>Estudos</span></a></li>
+          <li><a class="nav__link" href="#projects" data-view="projects"><svg class="icon" aria-hidden="true"><use href="#i-folder"/></svg><span>Projetos</span></a></li>
+          <li><a class="nav__link" href="#profile" data-view="profile"><svg class="icon" aria-hidden="true"><use href="#i-user"/></svg><span>Perfil</span></a></li>
+        </ul>
+      </nav>
+
+      <button class="btn btn--ghost sidebar__theme" id="themeToggle" type="button" aria-label="Alternar tema claro/escuro">
+        <svg class="icon icon--sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="icon icon--moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        <span id="themeLabel">Tema claro</span>
+      </button>
+    </aside>
+
+    <div class="scrim" id="scrim" hidden></div>
+
+    <!-- ===== Conteúdo ===== -->
+    <div class="content">
+      <header class="topbar">
+        <button class="btn btn--icon menu-btn" id="menuBtn" type="button" aria-label="Abrir menu" aria-controls="sidebar" aria-expanded="false">
+          <svg class="icon" aria-hidden="true"><use href="#i-menu"/></svg>
+        </button>
+        <h1 class="topbar__title" id="viewTitle">Dashboard</h1>
+      </header>
+
+      <main id="main" class="main" tabindex="-1">
+
+        <!-- Dashboard (Dia 2) -->
+        <section class="view" id="view-dashboard" data-title="Dashboard" aria-labelledby="viewTitle" hidden>
+          <div class="hero card">
+            <h2 id="welcomeMsg">Bem-vindo ao DevTrack 👋</h2>
+            <p class="muted">Seu painel de progresso como desenvolvedor. Registre estudos, tarefas e projetos para ver sua evolução aqui.</p>
+          </div>
+          <div class="empty" role="status">
+            <svg class="icon empty__icon" aria-hidden="true"><use href="#i-dashboard"/></svg>
+            <h3>Nenhum dado para mostrar ainda</h3>
+            <p>As estatísticas e gráficos aparecem aqui assim que você começar a registrar suas atividades.</p>
+          </div>
+        </section>
+
+        <!-- Tarefas (Dia 3) -->
+        <section class="view" id="view-tasks" data-title="Tarefas" hidden>
+          <div class="empty" role="status">
+            <svg class="icon empty__icon" aria-hidden="true"><use href="#i-tasks"/></svg>
+            <h3>Você ainda não tem tarefas</h3>
+            <p>O gerenciador de tarefas será ativado na próxima etapa.</p>
+          </div>
+        </section>
+
+        <!-- Estudos (Dia 4) -->
+        <section class="view" id="view-studies" data-title="Estudos" hidden>
+          <div class="empty" role="status">
+            <svg class="icon empty__icon" aria-hidden="true"><use href="#i-clock"/></svg>
+            <h3>Nenhuma sessão de estudo registrada</h3>
+            <p>O rastreador de estudos e o Pomodoro serão ativados em uma próxima etapa.</p>
+          </div>
+        </section>
+
+        <!-- Projetos (Dia 5) -->
+        <section class="view" id="view-projects" data-title="Projetos" hidden>
+          <div class="empty" role="status">
+            <svg class="icon empty__icon" aria-hidden="true"><use href="#i-folder"/></svg>
+            <h3>Nenhum projeto cadastrado</h3>
+            <p>O gerenciador de projetos será ativado em uma próxima etapa.</p>
+          </div>
+        </section>
+
+        <!-- Perfil (Dia 6) -->
+        <section class="view" id="view-profile" data-title="Perfil" hidden>
+          <div class="empty" role="status">
+            <svg class="icon empty__icon" aria-hidden="true"><use href="#i-user"/></svg>
+            <h3>Perfil ainda não configurado</h3>
+            <p>A personalização do perfil será ativada em uma próxima etapa.</p>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Notificações (toasts) -->
+  <div class="toasts" id="toasts" role="region" aria-label="Notificações" aria-live="polite"></div>
+
+  <!-- Diálogo de confirmação reutilizável -->
+  <dialog class="dialog" id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+    <form method="dialog" class="dialog__box">
+      <h2 id="confirmTitle">Confirmar ação</h2>
+      <p id="confirmText" class="muted"></p>
+      <div class="dialog__actions">
+        <button class="btn btn--ghost" value="cancel" id="confirmCancel">Cancelar</button>
+        <button class="btn btn--danger" value="ok" id="confirmOk">Excluir</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
